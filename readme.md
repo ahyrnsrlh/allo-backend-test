@@ -3,14 +3,14 @@
 A production-quality RESTful API for managing shared expenses within a group, built as a take-home test for **Allo Bank Backend Developer**.
 
 **GitHub Username:** `ahyrnsrlh`  
-**Service Charge:** `7%` (computed at runtime â€” see [Personalization](#personalization))
+**Service Charge:** `7%` (computed at runtime - see [Personalization](#personalization))
 
 ---
 
 ## Features
 
 - Create a bill group with a name and list of participants
-- Add expenses to a group â€” who paid, total amount, and who it benefits
+- Add expenses to a group - who paid, total amount, and who it benefits
 - Three split strategies: **EQUAL**, **EXACT**, and **PERCENTAGE**
 - Deterministic rounding so share totals always equal the original expense exactly
 - Settlement calculation (who owes whom) using a greedy debtor-creditor algorithm
@@ -26,19 +26,19 @@ A production-quality RESTful API for managing shared expenses within a group, bu
 
 ```
 com.ahyrnsrlh.splitbill
-â”œâ”€â”€ config/         # AppProperties (GitHub username binding), OpenApiConfig
-â”œâ”€â”€ controller/     # GroupController, ExpenseController
-â”œâ”€â”€ dto/
-â”‚   â”œâ”€â”€ request/    # CreateGroupRequest, CreateExpenseRequest, ShareRequest, ParticipantRequest
-â”‚   â””â”€â”€ response/   # GroupResponse, ExpenseResponse, SettlementResponse, TransferResponse, â€¦
-â”œâ”€â”€ entity/         # BillGroup, Participant, Expense, ExpenseShare, SplitType
-â”œâ”€â”€ exception/      # GlobalExceptionHandler, ResourceNotFoundException, BusinessException
-â”œâ”€â”€ repository/     # BillGroupRepository, ParticipantRepository, ExpenseRepository, ExpenseShareRepository
-â””â”€â”€ service/        # ServiceChargeService, GroupService, ExpenseService, SettlementService
+|-- config/         # AppProperties (GitHub username binding), OpenApiConfig
+|-- controller/     # GroupController, ExpenseController
+|-- dto/
+|   |-- request/    # CreateGroupRequest, CreateExpenseRequest, ShareRequest, ParticipantRequest
+|   +-- response/   # GroupResponse, ExpenseResponse, SettlementResponse, TransferResponse
+|-- entity/         # BillGroup, Participant, Expense, ExpenseShare, SplitType
+|-- exception/      # GlobalExceptionHandler, ResourceNotFoundException, BusinessException
+|-- repository/     # BillGroupRepository, ParticipantRepository, ExpenseRepository, ExpenseShareRepository
++-- service/        # ServiceChargeService, GroupService, ExpenseService, SettlementService
 ```
 
 Key design principles:
-- JPA entities are never exposed through controllers â€” all I/O uses DTOs
+- JPA entities are never exposed through controllers - all I/O uses DTOs
 - `BigDecimal` with scale=2 and `RoundingMode.HALF_UP` for every monetary value
 - Constructor injection throughout; no `@Autowired` field injection
 - Settlement logic is isolated in `SettlementService` with no controller dependency
@@ -49,15 +49,15 @@ Key design principles:
 
 | Technology | Version |
 |---|---|
-| Java | 17 (compatible with Java 24) |
+| Java | 17 target (runs on Java 21+ in Docker) |
 | Spring Boot | 3.3.4 |
-| Spring Web | â€” |
-| Spring Validation | â€” |
-| Spring Data JPA | â€” |
+| Spring Web | included |
+| Spring Validation | included |
+| Spring Data JPA | included |
 | H2 Database | In-memory (no external DB required) |
 | SpringDoc OpenAPI | 2.6.0 |
-| Spring Boot Actuator | â€” |
-| JUnit 5 + Mockito | (via `spring-boot-starter-test`) |
+| Spring Boot Actuator | included |
+| JUnit 5 | via spring-boot-starter-test |
 | Maven | 3.9.9 (via Maven Wrapper) |
 
 ---
@@ -65,7 +65,7 @@ Key design principles:
 ## Prerequisites
 
 - **Java 17+** installed and `JAVA_HOME` configured
-- **Maven Wrapper** is included (`./mvnw` / `mvnw.cmd`) â€” no separate Maven installation needed
+- **Maven Wrapper** is included (`./mvnw` / `mvnw.cmd`) - no separate Maven installation needed
 - **Docker** (optional, for containerised deployment)
 
 ---
@@ -74,10 +74,10 @@ Key design principles:
 
 ```bash
 # Clone the repository
-git clone https://github.com/ahyrnsrlh/<repo-name>.git
-cd <repo-name>
+git clone https://github.com/ahyrnsrlh/allo-backend-test.git
+cd allo-backend-test
 
-# Run the application (H2 in-memory, starts on port 8080)
+# Run the application (H2 in-memory, starts on port 4110)
 ./mvnw spring-boot:run
 
 # Windows
@@ -104,9 +104,9 @@ mvnw.cmd test
 ```
 
 Test coverage includes:
-- `ServiceChargeServiceTest` â€” proves the service charge is computed, not hardcoded
-- `SettlementServiceTest` â€” 8 unit tests covering all required settlement scenarios (pure Mockito, no Spring context)
-- `GroupControllerIntegrationTest` â€” full-stack integration tests via MockMvc
+- `ServiceChargeServiceTest` - proves the service charge is computed, not hardcoded (5 tests)
+- `SettlementServiceTest` - 8 unit tests covering all required settlement scenarios (pure unit, no Spring context)
+- `GroupControllerIntegrationTest` - full-stack integration tests via MockMvc (6 tests)
 
 ---
 
@@ -134,15 +134,15 @@ docker build -t split-bill-api .
 ### Run the container
 
 ```bash
-docker run -p 8080:8080 split-bill-api
+docker run -p 4110:4110 split-bill-api
 
 # With a custom GitHub username
-docker run -p 8080:8080 -e GITHUB_USERNAME=ahyrnsrlh split-bill-api
+docker run -p 4110:4110 -e GITHUB_USERNAME=ahyrnsrlh split-bill-api
 ```
 
 The Dockerfile uses a two-stage build:
-1. **Builder stage** â€” compiles with Maven Wrapper inside an eclipse-temurin JDK 17 Alpine image
-2. **Runtime stage** â€” copies only the JAR into a JRE 17 Alpine image, runs as a non-root user
+1. **Builder stage** - compiles with Maven Wrapper inside an `eclipse-temurin:21-jdk-alpine` image
+2. **Runtime stage** - copies only the JAR into a `eclipse-temurin:21-jre-alpine` image, runs as a non-root user
 
 ---
 
@@ -158,9 +158,9 @@ Base URL: `http://localhost:4110/api/v1`
 | `GET` | `/groups/{groupId}/expenses` | List all expenses in a group |
 | `GET` | `/groups/{groupId}/settlements` | Get settlement summary |
 
-Additional:
-- `GET /swagger-ui.html` â€” Interactive API docs
-- `GET /actuator/health` â€” Health check
+Additional endpoints:
+- `GET /swagger-ui.html` - Interactive API docs (Swagger UI)
+- `GET /actuator/health` - Health check
 
 ---
 
@@ -206,7 +206,7 @@ curl -s http://localhost:4110/api/v1/groups/1 | jq
 
 ---
 
-### 3. Add an expense â€” EQUAL split
+### 3. Add an expense - EQUAL split
 
 ```bash
 curl -s -X POST http://localhost:4110/api/v1/groups/1/expenses \
@@ -226,7 +226,7 @@ curl -s -X POST http://localhost:4110/api/v1/groups/1/expenses \
 
 ---
 
-### 4. Add an expense â€” EXACT split
+### 4. Add an expense - EXACT split
 
 ```bash
 curl -s -X POST http://localhost:4110/api/v1/groups/1/expenses \
@@ -246,7 +246,7 @@ curl -s -X POST http://localhost:4110/api/v1/groups/1/expenses \
 
 ---
 
-### 5. Add an expense â€” PERCENTAGE split
+### 5. Add an expense - PERCENTAGE split
 
 ```bash
 curl -s -X POST http://localhost:4110/api/v1/groups/1/expenses \
@@ -330,7 +330,7 @@ app:
 The `service_charge_amount` in the settlement response is informational only:
 
 ```
-serviceChargeAmount = totalGroupExpenses Ã— serviceChargePct Ã· 100
+serviceChargeAmount = totalGroupExpenses x serviceChargePct / 100
 ```
 
 It does **not** alter individual participant balances or debts.
@@ -341,13 +341,13 @@ It does **not** alter individual participant balances or debts.
 
 All monetary values use `BigDecimal` with scale=2 and `RoundingMode.HALF_UP`.
 
-**EQUAL split** â€” remainder handling:  
+**EQUAL split** - remainder handling:  
 Divides using `FLOOR` rounding, then distributes remaining cents to the first N participants deterministically. This guarantees `sum(shares) == expense.amount` exactly, with at most a 1-cent difference between any two shares.
 
-**PERCENTAGE split** â€” remainder handling:  
+**PERCENTAGE split** - remainder handling:  
 Each percentage is converted with `HALF_UP` rounding. Any aggregate rounding error is absorbed by adjusting the first participant's share, guaranteeing the total is exact.
 
-**EXACT split** â€” strict validation:  
+**EXACT split** - strict validation:  
 The sum of provided amounts must equal the expense amount exactly (after normalizing to scale=2), otherwise a `400 Bad Request` is returned.
 
 ---
@@ -356,8 +356,8 @@ The sum of provided amounts must equal the expense amount exactly (after normali
 
 Uses a greedy debtor-creditor algorithm:
 
-1. Compute each participant's net balance: `paid âˆ’ allocated_share`
-2. Sort participants into debtors (negative) and creditors (positive)
+1. Compute each participant's net balance: `paid - allocated_share`
+2. Separate participants into debtors (negative balance) and creditors (positive balance)
 3. Repeatedly match the largest debtor with the largest creditor, recording a transfer for the lesser amount
 4. Continue until all balances are zero
 
