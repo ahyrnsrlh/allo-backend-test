@@ -1,0 +1,25 @@
+# Build artifacts
+target/
+*.jar
+
+# IDE files
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+
+# Maven wrapper cache
+.mvn/repository/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Local config overrides
+*.env
+application-local.yml
